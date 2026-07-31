@@ -14,17 +14,17 @@ Requirements:
     playwright install chromium
 """
 
-import re
-import time
-import random
-import logging
 import argparse
 import datetime
-from pathlib import Path
-from dataclasses import dataclass, field, asdict
+import logging
+import random
+import re
+import time
+from dataclasses import asdict, dataclass, field
 
 import pandas as pd
-from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
+from playwright.sync_api import TimeoutError as PlaywrightTimeout
+from playwright.sync_api import sync_playwright
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -261,7 +261,7 @@ def export_to_excel(listings: list[Listing], output_path: str) -> None:
         logger.warning("No listings to export")
         return
 
-    rows = [asdict(l) for l in listings]
+    rows = [asdict(listing) for listing in listings]
     df = pd.DataFrame(rows)
 
     # Rename columns to be client-friendly
@@ -277,7 +277,7 @@ def export_to_excel(listings: list[Listing], output_path: str) -> None:
             ws.column_dimensions[col[0].column_letter].width = min(max_len, 60)
 
         # Bold header row
-        from openpyxl.styles import Font, PatternFill, Alignment
+        from openpyxl.styles import Alignment, Font, PatternFill
         header_font = Font(bold=True, color="FFFFFF")
         header_fill = PatternFill(start_color="2D6A4F", end_color="2D6A4F", fill_type="solid")
         for cell in ws[1]:
