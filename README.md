@@ -1,11 +1,31 @@
 # Real Estate Listings Scraper
 
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
 ![Playwright](https://img.shields.io/badge/Playwright-Chromium-2EAD33?logo=playwright&logoColor=white)
-![pandas](https://img.shields.io/badge/pandas-2.x-150458?logo=pandas&logoColor=white)
+![pandas](https://img.shields.io/badge/pandas-3.x-150458?logo=pandas&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-24%20passing-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-A JavaScript-aware web scraper that pulls real estate listings from Realtor.com and exports them to a clean, formatted Excel workbook. Because Realtor.com renders its listings client-side, this uses **Playwright + Chromium** rather than plain HTTP requests — the same approach needed for any modern, JS-heavy site.
+A browser-driven extraction pipeline that turns paginated, client-rendered property listings into a clean Excel workbook. Listings that a plain HTTP client never sees — because the markup arrives empty and the content is assembled in JavaScript — are captured by driving a real headless browser and waiting for the render.
+
+```bash
+pip install -r requirements.txt
+python realestate_scraper.py --demo      # 25 listings, no browser, no network
+```
+
+---
+
+## ⚖️ Responsible use
+
+Automated collection from any site is governed by that site's Terms of Service and `robots.txt`, and property listing data is frequently licensed rather than public domain.
+
+**Before pointing this at a live site:**
+
+1. Read that site's Terms of Service and `robots.txt`, and honour them.
+2. Prefer an official feed where one exists — most MLS data is available through licensed IDX/RETS/RESO Web API providers, which is the sanctioned route for listing data.
+3. Keep the built-in delays and the `--max-pages` cap on.
+
+`--demo` generates 25 realistic listings locally and is the intended path for evaluating this project. The parsing and export layers are source-agnostic and unit-tested against stubs, so the pipeline is useful independently of where the HTML comes from.
 
 ---
 
@@ -37,9 +57,9 @@ Most listing portals load their data with JavaScript, so a standard `requests` s
 ## Project structure
 
 ```
-realestate-scraper/
 ├── realestate_scraper.py   # Main scraper
 ├── requirements.txt        # Python dependencies
+├── tests/                  # 24 unit tests
 ├── sample_listings.xlsx    # Sample output (25 demo listings)
 └── scraper.log             # Generated: application log
 ```
@@ -54,6 +74,9 @@ source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 playwright install chromium       # one-time browser download
 ```
+
+`playwright install chromium` is only needed for live scraping. `--demo` and the
+test suite both run without it.
 
 ---
 
@@ -81,6 +104,32 @@ python realestate_scraper.py --city "Austin, TX" --no-headless
 3. Waits for listing cards to render, then extracts each into a typed `Listing` dataclass (with regex fallbacks for missing fields).
 4. Stops on the last page or when `--max-pages` is reached.
 5. Writes everything to a styled Excel workbook.
+
+---
+
+## Development
+
+```bash
+pip install -r requirements.txt
+pip install pytest ruff
+
+pytest -q          # 24 tests
+ruff check .
+```
+
+The suite launches no browser and makes no request. Playwright's element API is
+small enough to stub directly — `query_selector`, `inner_text`, `get_attribute` —
+which is what makes card parsing testable without downloading Chromium.
+
+It covers URL construction from the filter arguments (including city
+slugification and the page-1 suffix rule), defensive card parsing (the regex
+fallback used when the `data-testid` attributes are absent, relative-to-absolute
+listing URLs, cards that must be rejected, and a detached element that must not
+kill the whole card), and the Excel export.
+
+One assertion worth calling out: demo listings must genuinely satisfy the
+`--max-price` and `--min-beds` filters they claim to match. Demo data that
+violates its own filters would misrepresent what the tool does.
 
 ---
 
