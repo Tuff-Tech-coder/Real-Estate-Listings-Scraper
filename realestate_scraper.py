@@ -32,7 +32,7 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler(), logging.FileHandler("scraper.log")],
+    handlers=[logging.StreamHandler(), logging.FileHandler("scraper.log", encoding="utf-8")],
 )
 logger = logging.getLogger(__name__)
 
@@ -83,7 +83,7 @@ class RealEstateScraper:
         try:
             page.wait_for_selector('[data-testid="card-content"]', timeout=15000)
         except PlaywrightTimeout:
-            logger.warning("Listing cards did not appear — page may be blocking or empty")
+            logger.warning("Listing cards did not appear - page may be empty or still rendering")
             return listings
 
         cards = page.query_selector_all('[data-testid="card-content"]')
@@ -183,7 +183,7 @@ class RealEstateScraper:
                     # Extra wait for JS rendering
                     time.sleep(random.uniform(3, 6))
                 except PlaywrightTimeout:
-                    logger.warning(f"Page {page_num} timed out — stopping pagination")
+                    logger.warning(f"Page {page_num} timed out - stopping pagination")
                     break
                 except Exception as e:
                     logger.error(f"Failed to load page {page_num}: {e}")
@@ -196,7 +196,7 @@ class RealEstateScraper:
 
                 # If no listings on this page, we've hit the end
                 if not page_listings:
-                    logger.info("No listings found — reached last page")
+                    logger.info("No listings found - reached last page")
                     break
 
                 # Polite delay between pages
@@ -302,7 +302,7 @@ def main():
     parser.add_argument("--no-headless", action="store_true", help="Show browser window (for debugging)")
     args = parser.parse_args()
 
-    logger.info(f"Real Estate Scraper starting")
+    logger.info("Real Estate Scraper starting")
     logger.info(f"City: {args.city} | Max Price: ${args.max_price:,} | Min Beds: {args.min_beds}")
 
     if args.demo:
@@ -319,7 +319,7 @@ def main():
 
     if listings:
         export_to_excel(listings, args.output)
-        print(f"\n✓ Done! {len(listings)} listings saved to: {args.output}")
+        print(f"\n[OK] Done! {len(listings)} listings saved to: {args.output}")
     else:
         print("No listings found. Try different search parameters or check the log.")
 
