@@ -4,6 +4,7 @@ No browser is launched and no network request is made. Playwright's element
 API is small enough to stub directly -- query_selector, inner_text and
 get_attribute -- which is what makes _parse_card testable without Chromium.
 """
+
 import sys
 from pathlib import Path
 
@@ -98,7 +99,9 @@ class TestBuildUrl:
 # ---------------------------------------------------------------------------
 class TestParseCard:
     def test_extracts_every_field(self, scraper):
-        listing = scraper._parse_card(FakeCard(FULL, link_href="/realestateandhomes-detail/123"), None)
+        listing = scraper._parse_card(
+            FakeCard(FULL, link_href="/realestateandhomes-detail/123"), None
+        )
         assert listing.price == "$342,500"
         assert listing.address == "4823 Oak Ridge Dr, Austin, TX 78704"
         assert listing.beds == "3"
@@ -203,10 +206,22 @@ class TestExportToExcel:
     @pytest.fixture
     def listings(self):
         return [
-            Listing(address="1 Main St", price="$300,000", beds="3", baths="2",
-                    sqft="1,500", listing_url="https://example.com/1"),
-            Listing(address="2 Oak Ave", price="$425,000", beds="4", baths="3",
-                    sqft="2,200", listing_url="https://example.com/2"),
+            Listing(
+                address="1 Main St",
+                price="$300,000",
+                beds="3",
+                baths="2",
+                sqft="1,500",
+                listing_url="https://example.com/1",
+            ),
+            Listing(
+                address="2 Oak Ave",
+                price="$425,000",
+                beds="4",
+                baths="3",
+                sqft="2,200",
+                listing_url="https://example.com/2",
+            ),
         ]
 
     def test_writes_a_readable_workbook(self, listings, tmp_path):
@@ -225,7 +240,13 @@ class TestExportToExcel:
         export_to_excel(listings, str(out))
         ws = openpyxl.load_workbook(out)["Listings"]
         assert [c.value for c in ws[1]] == [
-            "Address", "Price", "Beds", "Baths", "Sq Ft", "Listing URL", "Date Scraped",
+            "Address",
+            "Price",
+            "Beds",
+            "Baths",
+            "Sq Ft",
+            "Listing URL",
+            "Date Scraped",
         ]
 
     def test_empty_input_writes_no_file(self, tmp_path):
