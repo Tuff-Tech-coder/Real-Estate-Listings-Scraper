@@ -130,9 +130,8 @@ The reviewed build passed **82 tests including the real Chromium test** on Windo
 
 The browser walkthrough covered combined filters, empty states, sorting, pagination, card/table views, comparison limits, source changes, and desktop/mobile layouts. Workbook responses were checked in automated tests. The browser download permission was declined, so that UI download step remains unverified.
 
-## Portfolio materials
+## More detail
 
-- [Project summary, LinkedIn draft, and interview walkthrough](PORTFOLIO.md)
 - [Debugging evidence and verification limits](REVIEW.md)
 - [Filtered table screenshot](docs/screenshots/02-filtered-table.jpg)
 - [Extraction pipeline screenshot](docs/screenshots/04-extraction-pipeline.jpg)
